@@ -5,17 +5,16 @@ import torch
 from torch import nn, optim
 from torchvision import datasets, transforms
 from collections import Counter
-
 import zipfile
-
 import shutil
 import os
-os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 import pandas as pd
+
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 device = ("cuda" if torch.cuda.is_available() else "cpu") # Use GPU or CPU for training
 
-output_dir = "../data_faces"
+output_dir = "../train"
 
 
 transform = transforms.Compose([
