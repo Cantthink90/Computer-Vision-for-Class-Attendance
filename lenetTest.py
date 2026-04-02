@@ -94,48 +94,48 @@ class LeNet(nn.Module):
         return x
 
 
-model = LeNet(num_classes=num_classes).to(device)
-print(
-    f"num_classes: {num_classes} | model output: {list(model.parameters())[-1].shape}"
-)
-
-# training
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
-criterion = nn.CrossEntropyLoss()
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
-epochs = 50
-train_loss = []
-
-
-for epoch in range(epochs):
-    model.train()
-    total_train_loss = 0
-
-    for idx, (image, label) in enumerate(trainLoader):
-        image, label = image.to(device), label.to(device)
-        optimizer.zero_grad()
-        pred = model(image)
-        loss = criterion(pred, label)
-        total_train_loss += loss.item()
-        loss.backward()
-        optimizer.step()
-
-    scheduler.step()
-    avg_loss = total_train_loss / (idx + 1)
-    train_loss.append(avg_loss)
+if __name__ == "__main__":
+    model = LeNet(num_classes=num_classes).to(device)
     print(
-        f"Epoch: {epoch} | Train Loss: {avg_loss:.4f} | LR: {scheduler.get_last_lr()[0]:.6f}"
+        f"num_classes: {num_classes} | model output: {list(model.parameters())[-1].shape}"
     )
 
-plt.plot(train_loss)
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.title("Training Loss - Untrained AlexNet")
-plt.savefig("train_loss_untrained.png")
+    # training
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    criterion = nn.CrossEntropyLoss()
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
+    epochs = 50
+    train_loss = []
+
+    for epoch in range(epochs):
+        model.train()
+        total_train_loss = 0
+
+        for idx, (image, label) in enumerate(trainLoader):
+            image, label = image.to(device), label.to(device)
+            optimizer.zero_grad()
+            pred = model(image)
+            loss = criterion(pred, label)
+            total_train_loss += loss.item()
+            loss.backward()
+            optimizer.step()
+
+        scheduler.step()
+        avg_loss = total_train_loss / (idx + 1)
+        train_loss.append(avg_loss)
+        print(
+            f"Epoch: {epoch} | Train Loss: {avg_loss:.4f} | LR: {scheduler.get_last_lr()[0]:.6f}"
+        )
+
+    plt.plot(train_loss)
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training Loss - Untrained AlexNet")
+    plt.savefig("train_loss_untrained.png")
 
 
 # Evaluation
-def evaluate(loader, label="Test"):
+def evaluate(model, loader, label="Test"):
     correct_top1, correct_top5, total = 0, 0, 0
     model.eval()
     top_k = min(5, num_classes)
@@ -158,27 +158,11 @@ def evaluate(loader, label="Test"):
         f"{label} | Top-1: {100 * correct_top1 / total:.2f}% | Top-5: {100 * correct_top5 / total:.2f}%"
     )
 
-
-evaluate(testLoader, "Test Before SVD")
-
-
-PATH = "LeNet_trained.pth"
-torch.save(model.state_dict(), PATH)
+    # PATH = "LeNet_trained.pth"
+    # torch.save(model.state_dict(), PATH)
 
 
-def svd_approx(kernel):
-    original_shape = kernel.shape
-    k2d = kernel.reshape(original_shape[0], -1)
-    U, S, Vh = torch.linalg.svd(k2d, full_matrices=False)
-    rank = round(S.numel() * 0.5)
-    print(f"full rank: {S.numel()} | kept rank: {rank}")
-    k2d_approx = U[:, :rank] @ torch.diag(S[:rank]) @ Vh[:rank, :]
-    return k2d_approx.reshape(original_shape)
+# evaluate(testLoader, "Test Before SVD")
 
 
-with torch.no_grad():
-    for layer in list(model.convolutional) + list(model.linear):
-        if hasattr(layer, "weight") and layer.weight is not None:
-            layer.weight.copy_(svd_approx(layer.weight.data.clone()))
-
-evaluate(testLoader, "Test After SVD")
+# evaluate(testLoader, "Test After SVD")
