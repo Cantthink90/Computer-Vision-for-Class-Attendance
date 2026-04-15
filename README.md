@@ -8,7 +8,6 @@ Below there are instructions on Running this project, both training and evaluati
 -Training-
 To generate the trained models run alexNet or leNet "Train" python scripts. These will run training. *NOTE* This will take a considerable amount of time and resources to run.
 If new trained models are needed run use this to get new model weights.
-There are saved model weights in the github so there is no need to retrain unless faces are added to the dataset.
 
 -Evaluation-
 To evaluate run the alexNet or leNet "Eval" python scripts to see the outputs of each architecture. 
